@@ -1,9 +1,12 @@
 {
   "name": "node-can",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.1-alpha.3",
   "description": "A Node.js CAN library supporting multiple transports & protocols",
   "main": "index.js",
-  "files": ["*", "dist"],
+  "files": [
+    "*",
+    "dist"
+  ],
   "scripts": {
     "lint": "eslint . --ext .js -c .eslintrc.js",
     "dev": "babel src --watch src --verbose --out-dir dist",
