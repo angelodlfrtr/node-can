@@ -4,7 +4,6 @@
   "description": "A Node.js CAN library supporting multiple transports & protocols",
   "main": "index.js",
   "files": [
-    "*",
     "dist"
   ],
   "scripts": {
