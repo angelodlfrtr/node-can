@@ -3,9 +3,6 @@
   "version": "0.0.1-alpha.4",
   "description": "A Node.js CAN library supporting multiple transports & protocols",
   "main": "index.js",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "lint": "eslint . --ext .js -c .eslintrc.js",
     "dev": "babel src --watch src --verbose --out-dir dist",
