@@ -200,10 +200,16 @@ export default class DicVariable {
   /*
    * Get raw variable value
    *
+   * @param {boolean} transform if set to false, return the raw data in a buffer
+   *
    * @return {Promise<Integer,String,Buffer>}
    */
-  getRaw() {
+  getRaw(transform = true) {
     return this.read().then((buf) => {
+      if (!transform) {
+        return buf;
+      }
+
       if (this.dataType === VISIBLE_STRING) {
         return buf.toString('ascii');
       }
@@ -257,7 +263,7 @@ export default class DicVariable {
       }
 
       // Return buffer in other cases (possible ?)
-      return buf;
+      throw new Error('Correspondance error between data and type');
     });
   }
 
