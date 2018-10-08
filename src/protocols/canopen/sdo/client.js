@@ -1,5 +1,6 @@
-import Promise from 'bluebird';
+import { randomBytes } from 'crypto';
 import { EventEmitter } from 'events';
+import Promise from 'bluebird';
 import retry from 'retry';
 
 const MAX_RETRIES = 3;
@@ -29,6 +30,20 @@ export default class SdoClient extends EventEmitter {
    */
   sendRequest(request) {
     return this.network.sendMessage(this.rxCobId, request);
+  }
+
+  /**
+   * Create an entry in queue and resolve the `done` callback. Permit to block request pipe
+   * outside of this class
+   *
+   * @important In this case, the external function must call `directSend` instead of `send`
+   * Else a infinite loop will appear
+   *
+   * @return {Promise<Function>}
+   */
+  block() {
+    const requestId = randomBytes(16).toString('hex');
+    return this.requireRequestTime(requestId);
   }
 
   /**
@@ -71,7 +86,9 @@ export default class SdoClient extends EventEmitter {
    * @return {Promise<Message>} Promise resolved to response message
    */
   send(request, expectedMesHandler = null) {
-    return this.requireRequestTime(request.toString('hex')).then((done) => { // eslint-disable-line
+    const requestId = randomBytes(16).toString('hex');
+
+    return this.requireRequestTime(requestId).then((done) => { // eslint-disable-line
       return this.directSend(request, expectedMesHandler).then((response) => {
         done();
         return response;

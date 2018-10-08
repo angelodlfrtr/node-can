@@ -37,6 +37,29 @@ export default class SdoReader {
     this.toggle = 0;
     this.pos = 0;
     this.data = Buffer.alloc(0);
+    this.doneFunc = null;
+  }
+
+  /**
+   * Append data to current this.data buffer
+   *
+   * @param {bufToAppend}
+   *
+   * @return void
+   */
+  appendData(bufToAppend) {
+    this.data = Buffer.concat([this.data, bufToAppend]);
+  }
+
+  /**
+   * Copy data buffer to a new buffer
+   *
+   * @return {Buffer}
+   */
+  getData() {
+    const buf = Buffer.alloc(this.data.length);
+    this.data.copy(buf);
+    return buf;
   }
 
   /**
@@ -93,58 +116,39 @@ export default class SdoReader {
       return true;
     };
 
-    return this.sdo.send(this.buildRequestUploadBuf(), validateResponse)
-      .then((message) => {
-        // Retrive response data
-        const resCommand = message.data.readUInt8(0);
-        // const resIndex = message.data.readUInt16LE(1);
-        // const resSubindex = message.data.readUInt8(3);
-        const resData = message.data.slice(4, 8);
+    // Block request queue
+    return this.sdo.block().then((done) => {
+      this.doneFunc = done;
 
-        let expData;
+      return this.sdo.directSend(this.buildRequestUploadBuf(), validateResponse)
+        .then((message) => {
+          // Retrive response data
+          const resCommand = message.data.readUInt8(0);
+          const resData = message.data.slice(4, 8);
 
-        // If data is already in response (max 4 bytes)
-        if (resCommand & EXPEDITED) {
-          // Expedited upload
-          if (resCommand & SIZE_SPECIFIED) {
-            this.size = 4 - ((resCommand >> 2) & 0x3);
-            expData = resData.slice(0, this.size);
-          } else {
-            expData = resData;
+          let expData;
+
+          // If data is already in response (max 4 bytes)
+          if (resCommand & EXPEDITED) {
+            // Expedited upload
+            if (resCommand & SIZE_SPECIFIED) {
+              this.size = 4 - ((resCommand >> 2) & 0x3);
+              expData = resData.slice(0, this.size);
+            } else {
+              expData = resData;
+            }
+
+            return expData;
           }
 
-          return expData;
-        }
+          if (resCommand & SIZE_SPECIFIED) {
+            // Else get size of data to get with segmented transfer
+            this.size = resData.readUInt32LE(0);
+          }
 
-        if (resCommand & SIZE_SPECIFIED) {
-          // Else get size of data to get with segmented transfer
-          this.size = resData.readUInt32LE(0);
-        }
-
-        return null;
-      });
-  }
-
-  /**
-   * Append data to current this.data buffer
-   *
-   * @param {bufToAppend}
-   *
-   * @return void
-   */
-  appendData(bufToAppend) {
-    this.data = Buffer.concat([this.data, bufToAppend]);
-  }
-
-  /**
-   * Copy data buffer to a new buffer
-   *
-   * @return {Buffer}
-   */
-  getData() {
-    const buf = Buffer.alloc(this.data.length);
-    this.data.copy(buf);
-    return buf;
+          return null;
+        });
+    });
   }
 
   readAll() {
@@ -152,6 +156,7 @@ export default class SdoReader {
       this.requestUpload().then((buf) => {
         // if EXPEDITED, then return data
         if (buf) {
+          this.doneFunc();
           this.reset();
           return resolve(buf);
         }
@@ -164,10 +169,16 @@ export default class SdoReader {
             try {
               resCommand = response.data.readUInt8(0);
             } catch (e) {
+              this.doneFunc();
+              this.reset();
+
               return reject(e);
             }
 
             if ((resCommand & TOGGLE_BIT) !== this.toggle) {
+              this.doneFunc();
+              this.reset();
+
               return reject(new Error('Toggle bit mismatch'));
             }
 
@@ -180,6 +191,8 @@ export default class SdoReader {
 
             if (resCommand & NO_MORE_DATA) {
               const result = this.getData();
+
+              this.doneFunc();
               this.reset();
 
               return resolve(result);
@@ -187,11 +200,21 @@ export default class SdoReader {
 
             // Loop again
             return iterate();
-          }).catch(reject);
+          }).catch((err) => {
+            this.doneFunc();
+            this.reset();
+
+            return reject(err);
+          });
         };
 
         return iterate();
-      }, reject);
+      }, (err) => {
+        this.doneFunc();
+        this.reset();
+
+        return reject(err);
+      });
     });
   }
 
@@ -241,6 +264,6 @@ export default class SdoReader {
       return true;
     };
 
-    return this.sdo.send(this.buildRequestSegmentUploadBuf(), validateResponse);
+    return this.sdo.directSend(this.buildRequestSegmentUploadBuf(), validateResponse);
   }
 }
