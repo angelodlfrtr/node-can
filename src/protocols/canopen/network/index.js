@@ -58,22 +58,8 @@ export default class Network extends EventEmitter {
     if (node) {
       Object.assign(message, { node });
 
-      // Try to parse SDO Response
-      if (message.data && message.data.length > 3) {
-        try {
-          const sdoResponse = {
-            command: message.data.readUInt8(0),
-            index: message.data.readUInt16LE(1),
-            subindex: message.data.readUInt8(3),
-          };
-
-          Object.assign(node, { sdoResponse });
-        } catch (e) {
-          return;
-        }
-      }
-
-      // @TODO: Parse PDO message ...
+      // @TODO: parse sdo message
+      // @TODO: parse pdo message
 
       // Emit message in specific node
       node.emit('message', message);

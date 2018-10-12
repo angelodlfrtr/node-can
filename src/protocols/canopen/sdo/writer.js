@@ -107,19 +107,32 @@ export default class SdoWriter {
     const { type, buffer } = this.buildRequestDownloadBuf(data, size);
 
     const validateResponse = (message) => {
-      if (!message || (message && !message.sdoResponse)) {
+      if (!message) {
         return false;
       }
 
-      if (message.sdoResponse.command !== RESPONSE_DOWNLOAD) {
+      let resCommand;
+      let resIndex;
+      let resSubindex;
+
+      try {
+        resCommand = message.data.readUInt8(0);
+        resIndex = message.data.readUInt16LE(1);
+        resSubindex = message.data.readUInt8(3);
+      } catch (e) {
         return false;
       }
 
-      if (message.sdoResponse.index !== this.index) {
+      // Check response validity
+      if ((resCommand & 0xE0) !== RESPONSE_DOWNLOAD) {
         return false;
       }
 
-      if (message.sdoResponse.subindex !== this.subindex) {
+      if (resIndex !== this.index) {
+        return false;
+      }
+
+      if (resSubindex !== this.subindex) {
         return false;
       }
 
