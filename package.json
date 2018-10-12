@@ -1,6 +1,6 @@
 {
   "name": "node-can",
-  "version": "0.0.1-alpha.7",
+  "version": "0.0.1-alpha.8",
   "description": "A Node.js CAN library supporting multiple transports & protocols",
   "main": "index.js",
   "scripts": {
