@@ -7,13 +7,11 @@ export default class PdoNode extends EventEmitter {
    * @constructor
    *
    * @param {Node} node
-   * @param {SdoClient} sdo
    */
-  constructor(node, sdo) {
+  constructor(node) {
     super();
 
     this.node = node;
-    this.sdo = sdo;
     this.network = null;
 
     this.rx = new PdoMaps(0x1400, 0x1600, this);
@@ -65,7 +63,8 @@ export default class PdoNode extends EventEmitter {
     const promises = [];
 
     [this.rx, this.tx].forEach((pdoMaps) => {
-      pdoMaps.maps.forEach((map) => {
+      Object.keys(pdoMaps.maps).forEach((m) => {
+        const map = pdoMaps.maps[m];
         promises.push(map.save());
       });
     });

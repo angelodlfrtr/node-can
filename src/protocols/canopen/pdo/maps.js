@@ -14,9 +14,9 @@ export default class PdoMaps {
     for (let i = 0; i < 32; i += 1) {
       const idx = comOffset + i;
 
-      if (pdoNode.sdo.objectDic.find(idx)) {
-        const comSdo = pdoNode.sdo.objectDic.find(comOffset + i).bindSDO(pdoNode.sdo);
-        const mapSdo = pdoNode.sdo.objectDic.find(mapOffset + i).bindSDO(pdoNode.sdo);
+      if (pdoNode.node.objectDic.find(idx)) {
+        const comSdo = pdoNode.node.objectDic.find(comOffset + i).bindSDO(pdoNode.node.sdo);
+        const mapSdo = pdoNode.node.objectDic.find(mapOffset + i).bindSDO(pdoNode.node.sdo);
 
         this.maps[i + 1] = new PdoMap(pdoNode, comSdo, mapSdo);
       }

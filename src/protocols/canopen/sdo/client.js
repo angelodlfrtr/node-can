@@ -10,12 +10,13 @@ export default class SdoClient extends EventEmitter {
   /**
    * @constructor
    */
-  constructor(nodeId, objectDic) {
+  constructor(node) {
     super();
 
-    this.rxCobId = 0x600 + nodeId;
-    this.txCobId = 0x580 + nodeId;
-    this.objectDic = objectDic;
+    this.node = node;
+    this.rxCobId = 0x600 + node.id;
+    this.txCobId = 0x580 + node.id;
+    this.objectDic = node.objectDic;
     this.network = null;
 
     this.requests = [];

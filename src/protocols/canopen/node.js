@@ -21,9 +21,11 @@ export default class Node extends EventEmitter {
       // @TODO: import dic from slave
     }
 
-    this.sdo = new SdoClient(this.id, objectDic);
-    this.pdo = new PdoNode(this, this.sdo);
-    this.nmt = new NmtMaster(this.id);
+    this.objectDic = objectDic;
+
+    this.sdo = new SdoClient(this);
+    this.pdo = new PdoNode(this);
+    this.nmt = new NmtMaster(this);
     this.emcy = new EmcyConsumer();
   }
 
@@ -41,10 +43,6 @@ export default class Node extends EventEmitter {
     this.nmt.network = network;
 
     this.nmt.listenForHeartbeat();
-
-    // network.subscribe(this.sdo.txCobId, this.sdo.onResponse);
-    // network.subscribe(0x100 + this.id, this.nmt.onHeartbeat);
-    // network.subscribe(0x80 + this.id, this.emcy.onEmcy);
   }
 
   /**

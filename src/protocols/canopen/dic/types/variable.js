@@ -1,6 +1,7 @@
 import Promise from 'bluebird';
 import SdoReader from '../../sdo/reader';
 import SdoWriter from '../../sdo/writer';
+import DicEntity from './entity';
 
 import {
   VISIBLE_STRING,
@@ -19,7 +20,7 @@ import {
   DOMAIN,
 } from './types';
 
-export default class DicVariable {
+export default class DicVariable extends DicEntity {
   /**
    * @constructor
    *
@@ -28,6 +29,8 @@ export default class DicVariable {
    * @param {Integer} subindex
    */
   constructor(name, index, subindex = 1) {
+    super();
+
     this.unit = '';
     this.factor = 1;
     this.min = null;
@@ -37,8 +40,8 @@ export default class DicVariable {
     this.accessType = 'rw';
     this.description = '';
 
-    // Used by PDO
     this.data = Buffer.alloc(0);
+    this.offset = null;
 
     this.index = index;
     this.subindex = subindex;
@@ -54,6 +57,8 @@ export default class DicVariable {
 
   /**
    * Set sdo in DicVariable
+   *
+   * @overwrite
    *
    * @param {SdoClient} sdo
    *
@@ -171,7 +176,10 @@ export default class DicVariable {
         this.sdoReader = new SdoReader(this.sdo, this.index, this.subindex);
       }
 
-      return this.sdoReader.readAll();
+      return this.sdoReader.readAll().then((value) => {
+        this.data = value;
+        return this.getRaw();
+      });
     });
   }
 
@@ -205,66 +213,66 @@ export default class DicVariable {
    * @return {Promise<Integer,String,Buffer>}
    */
   getRaw(transform = true) {
-    return this.read().then((buf) => {
-      if (!transform) {
-        return buf;
-      }
+    const buf = this.data;
 
-      if (this.dataType === VISIBLE_STRING) {
-        return buf.toString('ascii');
-      }
+    if (!transform) {
+      return buf;
+    }
 
-      if (this.dataType === UNICODE_STRING) {
-        return buf.toString('utf16le');
-      }
+    if (this.dataType === VISIBLE_STRING) {
+      return buf.toString('ascii');
+    }
 
-      if (this.dataType === BOOLEAN) {
-        return !!buf.readUInt8(0);
-      }
+    if (this.dataType === UNICODE_STRING) {
+      return buf.toString('utf16le');
+    }
 
-      if (this.dataType === INTEGER8) {
-        return buf.readInt8(0);
-      }
+    if (this.dataType === BOOLEAN) {
+      return !!buf.readUInt8(0);
+    }
 
-      if (this.dataType === INTEGER16) {
-        return buf.readInt16LE(0);
-      }
+    if (this.dataType === INTEGER8) {
+      return buf.readInt8(0);
+    }
 
-      if (this.dataType === INTEGER32) {
-        return buf.readInt32LE(0);
-      }
+    if (this.dataType === INTEGER16) {
+      return buf.readInt16LE(0);
+    }
 
-      if (this.dataType === INTEGER64) {
-        return buf.readIntLE(0, 8);
-      }
+    if (this.dataType === INTEGER32) {
+      return buf.readInt32LE(0);
+    }
 
-      if (this.dataType === UNSIGNED8) {
-        return buf.readUInt8(0);
-      }
+    if (this.dataType === INTEGER64) {
+      return buf.readIntLE(0, 8);
+    }
 
-      if (this.dataType === UNSIGNED16) {
-        return buf.readUInt16LE(0);
-      }
+    if (this.dataType === UNSIGNED8) {
+      return buf.readUInt8(0);
+    }
 
-      if (this.dataType === UNSIGNED32) {
-        return buf.readUInt32LE(0);
-      }
+    if (this.dataType === UNSIGNED16) {
+      return buf.readUInt16LE(0);
+    }
 
-      if (this.dataType === UNSIGNED64) {
-        return buf.readUIntLE(0, 8);
-      }
+    if (this.dataType === UNSIGNED32) {
+      return buf.readUInt32LE(0);
+    }
 
-      if (this.dataType === REAL32) {
-        return buf.readFloatLE(0);
-      }
+    if (this.dataType === UNSIGNED64) {
+      return buf.readUIntLE(0, 8);
+    }
 
-      if (this.dataType === REAL64) {
-        return buf.readDoubleLE(0);
-      }
+    if (this.dataType === REAL32) {
+      return buf.readFloatLE(0);
+    }
 
-      // Return buffer in other cases (possible ?)
-      throw new Error('Correspondance error between data and type');
-    });
+    if (this.dataType === REAL64) {
+      return buf.readDoubleLE(0);
+    }
+
+    // Return buffer in other cases (possible ?)
+    throw new Error('Correspondance error between data and type');
   }
 
   /**
@@ -359,16 +367,19 @@ export default class DicVariable {
    *
    * @param {Any} value
    *
-   * @return {Promise}
+   * @return {DicVariable} current dic variable
    */
   setRaw(value) {
-    let buf = null;
+    this.data = this.valToBuf(value);
+    return this;
+  }
 
-    try {
-      buf = this.valToBuf(value);
-      return this.write(buf);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+  /**
+   * Send current data using sdo
+   *
+   * @return {Promise}
+   */
+  save() {
+    return this.write(this.data);
   }
 }

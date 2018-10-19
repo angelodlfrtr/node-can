@@ -1,4 +1,6 @@
-export default class DicRecord {
+import DicEntity from './entity';
+
+export default class DicRecord extends DicEntity {
   /**
    * @constructor
    *
@@ -6,26 +8,13 @@ export default class DicRecord {
    * @param {Integer} index
    */
   constructor(name, index) {
+    super();
+
     this.description = '';
     this.index = index;
     this.name = name;
     this.subindices = {};
     this.names = {};
-  }
-
-  /**
-   * Set sdo in DicVariable in subindices
-   *
-   * @param {SdoClient} sdo
-   *
-   * @return {DicRecord} this
-   */
-  bindSDO(sdo) {
-    Object.keys(this.subindices).forEach((k) => {
-      this.subindices[k].sdo = sdo;
-    });
-
-    return this;
   }
 
   /**

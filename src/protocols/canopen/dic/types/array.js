@@ -1,4 +1,6 @@
-export default class DicArray {
+import DicEntity from './entity';
+
+export default class DicArray extends DicEntity {
   /**
    * @constructor
    *
@@ -6,26 +8,13 @@ export default class DicArray {
    * @param {Integer} index
    */
   constructor(name, index) {
+    super();
+
     this.description = '';
     this.index = index;
     this.name = name;
     this.subindices = {};
     this.names = {};
-  }
-
-  /**
-   * Set sdo in DicVariable in subindices
-   *
-   * @param {SdoClient} sdo
-   *
-   * @return {DicArray} this
-   */
-  bindSDO(sdo) {
-    Object.keys(this.subindices).forEach((k) => {
-      this.subindices[k].sdo = sdo;
-    });
-
-    return this;
   }
 
   /**

@@ -89,11 +89,11 @@ bus.run().then(() => {
 				pdoSignal.on('change', console.log);
 
 				// Read SDO
-				node.sdo.get('SOME_RECORD').get('SOME_VARIABLE').getRaw().then(console.log);
+				node.sdo.get('SOME_RECORD').get('SOME_VARIABLE').read().then(console.log);
 
 				// Write SDO
 				const sdoVal = 0x01;
-				node.sdo.get('SOME_RECORD').get('SOME_VARIABLE').setRaw(sdoVal).then(console.log);
+				node.sdo.get('SOME_RECORD').get('SOME_VARIABLE').setRaw(sdoVal).save().then(console.log);
 			});
 		} else {
 			console.error('Node slave node found');

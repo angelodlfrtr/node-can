@@ -146,17 +146,17 @@ export default class PdoMap extends EventEmitter {
    * @return {Promise<void>}
    */
   read() {
-    return this.comRecord.find(1).getRaw().then((cobId) => {
+    return this.comRecord.find(1).read().then((cobId) => {
       this.cobId = cobId;
       this.enabled = (cobId & PDO_NOT_VALID) === 0;
       this.rtrAllowed = (cobId & RTR_NOT_ALLOWED) === 0;
 
-      return this.comRecord.find(2).getRaw().then((transType) => {
+      return this.comRecord.find(2).read().then((transType) => {
         this.transType = transType;
         let evtTimerPromise = Promise.resolve(null);
 
         if (this.transType > 254 && this.comRecord.find(5)) {
-          evtTimerPromise = this.comRecord.find(5).getRaw();
+          evtTimerPromise = this.comRecord.find(5).read();
         }
 
         return evtTimerPromise.then((eventTimer) => {
@@ -165,11 +165,11 @@ export default class PdoMap extends EventEmitter {
           this.map = [];
           let offset = 0;
 
-          return this.mapArray.find(0).getRaw().then((nofEntries) => {
+          return this.mapArray.find(0).read().then((nofEntries) => {
             const rPromises = [];
 
             for (let i = 1; i <= (nofEntries + 1); i += 1) {
-              rPromises.push(this.mapArray.find(i).getRaw());
+              rPromises.push(this.mapArray.find(i).read());
             }
 
             return Promise.all(rPromises).then((values) => {
@@ -182,12 +182,13 @@ export default class PdoMap extends EventEmitter {
                   return;
                 }
 
-                let dicVar = this.pdoNode.sdo.objectDic.find(index);
+                let dicVar = this.pdoNode.node.objectDic.find(index);
+                dicVar.size = size;
 
                 if (dicVar instanceof DicVariable) {
-                  dicVar.sdo = this.pdoNode.sdo;
+                  dicVar.sdo = this.pdoNode.node.sdo;
                 } else {
-                  dicVar = dicVar.bindSDO(this.pdoNode.sdo);
+                  dicVar = dicVar.bindSDO(this.pdoNode.node.sdo);
                   dicVar = dicVar.find(subindex);
                 }
 
@@ -203,5 +204,100 @@ export default class PdoMap extends EventEmitter {
         });
       });
     });
+  }
+
+  /**
+   * Write PDO configuration to a node
+   *
+   * @TODO: not working
+   *
+   * @return {Promise<void>}
+   */
+  save() {
+    return this.comRecord.find(1).read().then((cobId) => {
+      this.cobId = cobId;
+
+      if (this.cobId === null) {
+        this.cobId = this.cobId & 0x7FF;
+      }
+
+      if (this.enabled === null) {
+        // @TODO: If not enabled, do not rely PDO messages on this map
+        this.enabled = (cobId && PDO_NOT_VALID) === 0;
+      }
+
+      // Setting COB-ID 0x%X and temporarily disabling PDO
+      //
+      // @TODO: Not working, the value is not a correct data type
+      return this.comRecord.find(1).setRaw(this.cobId | PDO_NOT_VALID).save().then(() => {
+        let promises = [];
+
+        if (this.transType !== null) {
+          promises.push(this.comRecord.find(2).setRaw(this.transType).save());
+        }
+
+        if (this.eventTimer !== null) {
+          promises.push(this.comRecord.find(5).setRaw(this.eventTimer).save());
+        }
+
+        return Promise.all(promises).then(() => {
+          if (this.map && this.map.length) {
+            return this.mapArray.find(0).setRaw(0).save().then(() => {
+              promises = [];
+
+              this.map.forEach((dicVar, i) => {
+                const subindex = i + 1;
+                const val = (dicVar.index << 16 | dicVar.subindex << 8 | dicVar.getDataLen());
+
+                promises.push(this.mapArray.find(subindex).setRaw(val).save());
+              });
+
+              return Promise.all(promises).then(() => {
+                return this.mapArray.find(0).setRaw(this.map.length).save()
+                  .then(() => this.updateDataSize());
+              });
+            });
+          }
+        });
+      });
+    });
+  }
+
+  /**
+   * Rebuild map data object from map variables
+   *
+   * return {void}
+   */
+  rebuildData() {
+    let data = Buffer.allocUnsafe(Math.floor(this.getTotalSize() / 8));
+    data.fill(0);
+
+    this.map.forEach((dicVar) => {
+      if (dicVar.data.length === 0) {
+        return;
+      }
+
+      const dicOffset = Math.floor(dicVar.offset / 8);
+
+      for (let i = 0; i < dicVar.data.length; i+= 1) {
+        const offset = i + dicOffset;
+        data[offset] = dicVar.data[i];
+      }
+    });
+
+    this.setData(data);
+  }
+
+  /**
+   * Send data to pdo node
+   *
+   * @return {Promise}
+   */
+  transmit(rebuild = true) {
+    if (rebuild) {
+      this.rebuildData();
+    }
+
+    return this.pdoNode.network.sendMessage(this.cobId, this.data);
   }
 }
