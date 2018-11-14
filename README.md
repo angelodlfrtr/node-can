@@ -49,7 +49,7 @@ So it support MacOS, Linux and Windows. See [node-serialport supported environme
 
 `node-can` take care to send initialization parameters to the serial adapater, and configure it to transfert frames in normal mode (Extended frame will be supported soon).
 
-#### USBCanAnalyserV7 usage
+#### Usage
 
 ```js
 const can = require('node-can');
@@ -58,13 +58,45 @@ const bus = new can.Bus('raw', 'USBCanAnalyserV7', {
 });
 ```
 
+### SocketCAN
+
+#### OS support
+
+SocketCan is available only on linux. The transport should working on all linux distributions built with socketCAN support.
+
+#### Usage
+
+```js
+const can = require('node-can');
+const bus = new can.Bus('raw', 'socketCan', {
+	interface: 'can0', // String, required
+});
+```
+
 ## Protocols
+
+### RAW
+
+#### Usage
+
+```js
+const can = require('node-can');
+const bus = new can.Bus('raw', 'USBCanAnalyserV7', {
+	interface: 'can0',
+});
+
+// Listen for messages
+bus.protocol.on('message', console.log);
+
+// Write message
+bus.transport.write({ ...messageProps });
+```
 
 ### CanOPEN
 
 CanOPEN is not fully implemented !
 
-#### CanOPEN Usage
+#### Usage
 
 ```js
 const can = require('node-can');
@@ -107,15 +139,15 @@ bus.run().then(() => {
 - Write tests
 - Write real documentation
 - More comments in code
-- Prepbuild library with babel at installation, instead of using `@babel/register`
+- <del>Prepbuild library with babel at installation, instead of using `@babel/register`</del>
 - Ability to configure extended frame mode using `USBCanAnalyserV7` transport
 - Create an interface to allow developers to extending protocols & transports
 - Implement .kcd parser for `raw` protocol
-- Implement `socket can` support (need a native interface)
+- <del>Implement `socket can` support (need a native interface)</del>
 - `CanOPEN` protocol
 	- Ability to auto download object dictionary from a slave node
 	- Implement LSS
-	- PDO write
+	- <del>PDO write</del>
 	- Implement SYNC
 	- Implement TIME PRODUCER
 	- Implement `xml` dictionary parser

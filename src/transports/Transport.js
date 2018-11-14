@@ -9,7 +9,6 @@ export default class Transport extends EventEmitter {
    */
   constructor(config = {}) {
     super();
-
     this.config = this.parseConfig(config);
   }
 
