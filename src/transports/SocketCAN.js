@@ -1,5 +1,5 @@
 import Promise from 'bluebird';
-import * as can from '../../build/Release/socketcan';
+import * as socketcan from '../../build/Release/socketcan';
 import * as jspack from 'jspack';
 import Message from '../common/message';
 import Transport from './Transport';
