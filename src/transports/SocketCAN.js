@@ -107,7 +107,7 @@ export default class USBCanAnalyserV7Transport extends Transport {
   connect() {
     if (!this.channel) {
       // Create socketCAN channel
-      this.channel = socketcan.RawChannel(this.config.interface, 0);
+      this.channel = new socketcan.RawChannel(this.config.interface, 0);
 
       // Listen for message on channel
       this.channel.addListener('onMessage', this.handleData.bind(this));
