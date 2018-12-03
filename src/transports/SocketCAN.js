@@ -1,8 +1,15 @@
 import Promise from 'bluebird';
-import * as socketcan from '../../build/Release/socketcan';
 import * as jspack from 'jspack';
 import Message from '../common/message';
 import Transport from './Transport';
+
+let socketcan;
+
+try {
+  socketcan = require('../../build/Release/socketcan');
+} catch (e) {
+  socketcan = {};
+}
 
 export default class SocketCanTransport extends Transport {
   /**

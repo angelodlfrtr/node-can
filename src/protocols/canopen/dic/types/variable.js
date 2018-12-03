@@ -1,4 +1,5 @@
 import Promise from 'bluebird';
+import { Uint64LE } from 'int64-buffer';
 import SdoReader from '../../sdo/reader';
 import SdoWriter from '../../sdo/writer';
 import DicEntity from './entity';
@@ -260,7 +261,8 @@ export default class DicVariable extends DicEntity {
     }
 
     if (this.dataType === UNSIGNED64) {
-      return buf.readUIntLE(0, 8);
+      return new Uint64LE(buf).toNumber();
+      //return buf.readUIntLE(0, 8);
     }
 
     if (this.dataType === REAL32) {
