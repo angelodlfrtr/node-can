@@ -17,6 +17,10 @@
     "linux-install": "node-gyp rebuild"
   },
   "author": "Angelo Delefortrie <angelo.delefortrie@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/angelodlfrtr/node-can.git"
+  },
   "license": "MIT",
   "private": false,
   "dependencies": {
