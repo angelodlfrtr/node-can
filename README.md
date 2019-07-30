@@ -34,8 +34,6 @@ bus.run().then(() => {
 
 ## Transports
 
-Only `USBCanAnalyserV7 ` transport is supported as of now. `SocketCan` will be implemented soon for supporting native can interface on linux.
-
 ### USBCanAnalyserV7
 
 This transport implement support for the [USBCanAnalyserV7](https://www.seeedstudio.com/USB-CAN-Analyzer-p-2888.html) serial to can adapter.
