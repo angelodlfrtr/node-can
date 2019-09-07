@@ -140,4 +140,5 @@ tags
 # End of https://www.gitignore.io/api/vim,osx,node,linux
 
 test.js
+test_can.js
 /dist

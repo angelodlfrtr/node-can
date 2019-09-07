@@ -214,6 +214,7 @@ export default class USBCanAnalyserV7Transport extends Transport {
 
     Object.assign(config, {
       baudRate: 2000000,
+      //baudRate: 9600,
       databits: 8,
       parity: 'none',
       stopbits: 1,

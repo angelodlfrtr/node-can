@@ -279,7 +279,7 @@ export default class PdoMap extends EventEmitter {
 
       const dicOffset = Math.floor(dicVar.offset / 8);
 
-      for (let i = 0; i < dicVar.data.length; i+= 1) {
+      for (let i = 0; i < dicVar.data.length; i += 1) {
         const offset = i + dicOffset;
         data[offset] = dicVar.data[i];
       }
