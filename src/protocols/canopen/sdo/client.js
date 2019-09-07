@@ -3,8 +3,8 @@ import { EventEmitter } from 'events';
 import Promise from 'bluebird';
 import retry from 'retry';
 
-const MAX_RETRIES = 5;
-const RESPONSE_TIMEOUT = 500;
+const MAX_RETRIES = 3;
+const RESPONSE_TIMEOUT = 1000;
 
 export default class SdoClient extends EventEmitter {
   /**
