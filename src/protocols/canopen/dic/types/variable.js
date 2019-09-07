@@ -262,7 +262,7 @@ export default class DicVariable extends DicEntity {
 
     if (this.dataType === UNSIGNED64) {
       return new Uint64LE(buf).toNumber();
-      //return buf.readUIntLE(0, 8);
+      // return buf.readUIntLE(0, 8);
     }
 
     if (this.dataType === REAL32) {

@@ -247,17 +247,18 @@ export default class PdoMap extends EventEmitter {
 
               this.map.forEach((dicVar, i) => {
                 const subindex = i + 1;
-                const val = (dicVar.index << 16 | dicVar.subindex << 8 | dicVar.getDataLen());
+                const val = ((((dicVar.index << 16) | dicVar.subindex) << 8) | dicVar.getDataLen());
 
                 promises.push(this.mapArray.find(subindex).setRaw(val).save());
               });
 
-              return Promise.all(promises).then(() => {
-                return this.mapArray.find(0).setRaw(this.map.length).save()
-                  .then(() => this.updateDataSize());
-              });
+              return Promise.all(promises)
+                .then(() => this.mapArray.find(0).setRaw(this.map.length).save())
+                .then(() => this.updateDataSize());
             });
           }
+
+          return null;
         });
       });
     });
@@ -269,7 +270,7 @@ export default class PdoMap extends EventEmitter {
    * return {void}
    */
   rebuildData() {
-    let data = Buffer.allocUnsafe(Math.floor(this.getTotalSize() / 8));
+    const data = Buffer.allocUnsafe(Math.floor(this.getTotalSize() / 8));
     data.fill(0);
 
     this.map.forEach((dicVar) => {

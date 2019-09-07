@@ -1,11 +1,11 @@
 import Promise from 'bluebird';
-import * as jspack from 'jspack';
 import Message from '../common/message';
 import Transport from './Transport';
 
 let socketcan;
 
 try {
+  // eslint-disable-next-line
   socketcan = require('../../build/Release/socketcan');
 } catch (e) {
   socketcan = {};
@@ -78,7 +78,7 @@ export default class SocketCanTransport extends Transport {
   write(message) {
     const canFrame = this.messageToCanFrame(message);
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const r = this.channel.send(canFrame);
       return resolve(r);
     });
