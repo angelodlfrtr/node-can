@@ -150,7 +150,10 @@ export default class USBCanAnalyserV7Transport extends Transport {
 
             this.port.on('data', this.handleData.bind(this));
 
-            return resolve();
+            // Wait 1s before other actions
+            return setTimeout(() => {
+              resolve();
+            });
           });
 
           return null;
