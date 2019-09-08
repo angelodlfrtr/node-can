@@ -116,9 +116,6 @@ export default class USBCanAnalyserV7Transport extends Transport {
             return reject(err);
           }
 
-          // @TODO: adapter bug when send sequence
-          return resolve();
-
           // Configure adapter
           const seq = Buffer.from([
             0xAA,
@@ -150,10 +147,8 @@ export default class USBCanAnalyserV7Transport extends Transport {
 
             this.port.on('data', this.handleData.bind(this));
 
-            // Wait 1s before other actions
-            return setTimeout(() => {
-              resolve();
-            });
+            // Wait before other actions
+            return setTimeout(resolve, 200);
           });
 
           return null;
@@ -163,7 +158,7 @@ export default class USBCanAnalyserV7Transport extends Transport {
   }
 
   /**
-   * Write message to portjnkA
+   * Write message to port
    *
    * @param {Message} message
    *
@@ -179,7 +174,7 @@ export default class USBCanAnalyserV7Transport extends Transport {
           return reject(err);
         }
 
-        return resolve();
+        return self.port.flush(() => resolve());
       });
     });
   }
@@ -220,7 +215,6 @@ export default class USBCanAnalyserV7Transport extends Transport {
 
     Object.assign(config, {
       baudRate: 2000000,
-      //baudRate: 9600,
       databits: 8,
       parity: 'none',
       stopbits: 1,
