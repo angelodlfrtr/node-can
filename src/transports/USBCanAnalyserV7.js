@@ -116,6 +116,9 @@ export default class USBCanAnalyserV7Transport extends Transport {
             return reject(err);
           }
 
+          // @TODO: adapter bug when send sequence
+          return resolve();
+
           // Configure adapter
           const seq = Buffer.from([
             0xAA,

@@ -25,7 +25,7 @@ export default class Node extends EventEmitter {
 
     this.sdo = new SdoClient(this);
     this.pdo = new PdoNode(this);
-    this.nmt = new NmtMaster(this);
+    this.nmt = new NmtMaster(this.id);
     this.emcy = new EmcyConsumer();
   }
 
